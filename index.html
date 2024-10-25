@@ -1,30 +1,74 @@
 <!DOCTYPE html>
-   <head>
-      <title>NetworkChuck Halloween</title>
-      <link rel="stylesheet" href="../static/style.css/">
-   <center><h1>NetworkChuck Halloween Controller</h1></center><br>
-   <center><img src="https://networkchuck.com/wp-content/uploads/2019/10/networkchuck_halloweenquick.png" alt "NetworkChuck-logo" width="350" height="200"></center>
-    </head>
-   <center><body>
-        <h1> 
-                ZOMBIE (1)
-                <a href="/zombie" class="button">Activate</a>  
-        </h1>
-        <h1> 
-                Stone Wolf (2)
-                <a href="/stonewolf" class="button">Activate</a>
-        </h1>
-        <h1> 
-                Werewolf (3)
-                <a href="/werewolf" class="button">Activate</a>
-        </h1>
-        <h1> 
-                Pumpkin (4)
-                <a href="/pumpkin" class="button">Activate</a>
-        </h1>
-        <h1> 
-                Monster Mash
-                <a href="/monstermash" class="button">Activate</a>
-        </h1></center>
-   </body>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brinton Halloween Dashboard</title>
+    <link rel="stylesheet" href="../static/style.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #222;
+            color: #f8f8f8;
+            text-align: center;
+            padding: 2rem;
+        }
+        h1 {
+            font-size: 2rem;
+        }
+        .button {
+            display: inline-block;
+            padding: 15px 30px;
+            margin-top: 10px;
+            font-size: 1.2rem;
+            color: #ffffff;
+            background-color: #ff6600;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+        .button:hover {
+            background-color: #ff8c00;
+            transform: scale(1.05);
+        }
+        .controller-item {
+            margin: 2rem 0;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 15px;
+            margin-bottom: 2rem;
+        }
+    </style>
+</head>
+<body>
+    <h1>Brinton Halloween Dashboard</h1>
+    <img src="https://networkchuck.com/wp-content/uploads/2019/10/networkchuck_halloweenquick.png" alt="NetworkChuck-logo" width="350" height="200">
+
+    <div class="controller-item">
+        <h2>ZOMBIE (1)</h2>
+        <a href="/zombie" class="button">Activate</a>
+    </div>
+
+    <div class="controller-item">
+        <h2>Stone Wolf (2)</h2>
+        <a href="/stonewolf" class="button">Activate</a>
+    </div>
+
+    <div class="controller-item">
+        <h2>Werewolf (3)</h2>
+        <a href="/werewolf" class="button">Activate</a>
+    </div>
+
+    <div class="controller-item">
+        <h2>Pumpkin (4)</h2>
+        <a href="/pumpkin" class="button">Activate</a>
+    </div>
+
+    <div class="controller-item">
+        <h2>Monster Mash</h2>
+        <a href="/monstermash" class="button">Activate</a>
+    </div>
+</body>
 </html>
