@@ -2,8 +2,8 @@ import RPi.GPIO as GPIO
 import time
 from flask import Flask, render_template, request
 app = Flask(__name__)
-zombie = 40
-stonewolf = 38
+bartender = 40
+frankenstein = 38
 werewolf = 36
 pumpkin = 32
 monstermash = [40, 38, 36, 32]
@@ -18,14 +18,14 @@ def index():
 @app.route("/<deviceName>/")
 def action(deviceName):
     if deviceName != 'monstermash':
-        if deviceName == 'stonewolf':
-            relay = stonewolf
-        if deviceName == 'werewolf':
-            relay = werewolf
+        if deviceName == 'frankenstein':
+            relay = frankenstein
         if deviceName == 'pumpkin':
             relay = pumpkin
-        if deviceName == 'zombie':
-            relay = zombie
+        if deviceName == 'werewolf':
+            relay = werewolf
+        if deviceName == 'bartender':
+            relay = bartender
         GPIO.setmode(GPIO.BOARD)
         GPIO.setup(relay, GPIO.OUT)
         GPIO.output(relay, GPIO.LOW)
