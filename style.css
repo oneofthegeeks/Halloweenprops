@@ -1,15 +1,75 @@
-body {
-   background: black;
-   color: white;
-}
-.button {
-  font: bold 25px "Trebuchet MS";
-  text-decoration: none;
-  background-color: #EEEEEE;
-  color: #333333;
-  padding: 2px 6px 2px 6px;
-  border-top: 1px solid #CCCCCC;
-  border-right: 1px solid #333333;
-  border-bottom: 1px solid #333333;
-  border-left: 1px solid #CCCCCC;
-}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brinton Halloween Dashboard</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <ul>
+            <li><a href="#home">Home</a></li>
+            <li><a href="#controller">Controller Items</a></li>
+        </ul>
+    </nav>
+
+    <!-- Hero Image -->
+    <div class="hero">
+        <img src="https://i.imgur.com/KhaipLg.jpeg" alt="NetworkChuck Halloween">
+    </div>
+
+    <!-- Main Title -->
+    <h1>Brinton Halloween Dashboard</h1>
+
+    <!-- Feedback Message -->
+    <div id="message" class="feedback-message">
+        {% if message %}
+            <p>{{ message }}</p>
+        {% endif %}
+    </div>
+
+    <!-- Controller Section -->
+    <div id="controller" class="container">
+        <div class="controller-item">
+            <h2>Bartender (1)</h2>
+            <button onclick="activateDevice('bartender')" class="button">Activate</button>
+        </div>
+
+        <div class="controller-item">
+            <h2>Frankenstein (2)</h2>
+            <button onclick="activateDevice('frankenstein')" class="button">Activate</button>
+        </div>
+
+        <div class="controller-item">
+            <h2>Werewolf (3)</h2>
+            <button onclick="activateDevice('werewolf')" class="button">Activate</button>
+        </div>
+
+        <div class="controller-item">
+            <h2>Pumpkin (4)</h2>
+            <button onclick="activateDevice('pumpkin')" class="button">Activate</button>
+        </div>
+
+        <div class="controller-item">
+            <h2>Monster Mash</h2>
+            <button onclick="activateDevice('monstermash')" class="button">Activate</button>
+        </div>
+    </div>
+
+    <!-- JavaScript for AJAX Request -->
+    <script>
+        function activateDevice(deviceName) {
+            fetch('/' + deviceName + '/', {
+                method: 'GET'
+            })
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById('message').innerText = `${deviceName.charAt(0).toUpperCase() + deviceName.slice(1)} activated!`;
+            })
+            .catch(error => console.error('Error:', error));
+        }
+    </script>
+</body>
+</html>
