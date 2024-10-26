@@ -1,6 +1,6 @@
 import RPi.GPIO as GPIO
 import time
-from flask import Flask, render_template, request
+from flask import Flask, render_template, jsonify
 
 app = Flask(__name__)
 
@@ -17,7 +17,7 @@ relay_pins = monstermash
 # Set up all relays initially
 for pin in relay_pins:
     GPIO.setup(pin, GPIO.OUT)
-    GPIO.output(pin, GPIO.LOW)  # Set all relays to ON state initially
+    GPIO.output(pin, GPIO.LOW)  # Set all relays to OFF state initially
 
 @app.route("/")
 def index():
@@ -38,24 +38,22 @@ def action(deviceName):
             # Activate all relays for monstermash
             for pin in monstermash:
                 GPIO.output(pin, GPIO.HIGH)  # Turn ON all relays
-            time.sleep(1)  # Keep all relays on for 2 seconds
+            time.sleep(1)  # Keep all relays on for 1 second
             for pin in monstermash:
                 GPIO.output(pin, GPIO.LOW)  # Turn OFF all relays
-            return render_template('index.html')
-        else:
-            return "Error: Unknown device", 404
+            return jsonify({"message": "Monster Mash activated!"})
 
         # Activate the selected relay
         GPIO.output(relay, GPIO.HIGH)  # Turn ON the relay
         time.sleep(2)  # Keep the relay on for 2 seconds
         GPIO.output(relay, GPIO.LOW)  # Turn OFF the relay
+        return jsonify({"message": f"{deviceName.capitalize()} activated!"})
+
     except Exception as e:
-        return f"An error occurred: {e}", 500
-    
-    return render_template('index.html')
+        return jsonify({"message": f"An error occurred: {str(e)}"}), 500
 
 if __name__ == "__main__":
     try:
-        app.run(host='0.0.0.0', port=80, debug=True)
+        app.run(host='0.0.0.0', port=80)
     finally:
         GPIO.cleanup()  # Ensure GPIO cleanup on exit
