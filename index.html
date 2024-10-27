@@ -8,16 +8,9 @@
 </head>
 <body>
     <!-- Navigation Bar -->
-    <nav class="navbar">
-        <ul>
-            <li><a href="#home">Home</a></li>
-            <li><a href="#controller">Controller Items</a></li>
-        </ul>
-    </nav>
-
-    <!-- Hero Image -->
+        <!-- Hero Image -->
     <div class="hero">
-        <img src="https://i.imgur.com/KhaipLg.jpeg" alt="NetworkChuck Halloween">
+        <img src="https://i.imgur.com/KhaipLg.jpeg" alt="Brinton Halloween" style="width: 300px; height: auto; margin: 0 auto; display: block;">
     </div>
 
     <!-- Main Title -->
@@ -43,12 +36,12 @@
         </div>
 
         <div class="controller-item">
-            <h2>Blank (3)</h2>
+            <h2>Werewolf (3)</h2>
             <button onclick="activateDevice('werewolf')" class="button">Activate</button>
         </div>
 
         <div class="controller-item">
-            <h2>Fog Machine (4)</h2>
+            <h2>Fog (4)</h2>
             <button onclick="activateDevice('fog')" class="button">Activate</button>
         </div>
 
@@ -61,14 +54,22 @@
     <!-- JavaScript for AJAX Request -->
     <script>
         function activateDevice(deviceName) {
+            // Immediately display a confirmation message that the button was pressed
+            document.getElementById('message').innerText = `${deviceName.charAt(0).toUpperCase() + deviceName.slice(1)} activation started!`;
+
+            // Send the fetch request to the server
             fetch('/' + deviceName + '/', {
                 method: 'GET'
             })
-            .then(response => response.text())
+            .then(response => response.json())
             .then(data => {
-                document.getElementById('message').innerText = `${deviceName.charAt(0).toUpperCase() + deviceName.slice(1)} activated!`;
+                // Update the message again once the activation completes
+                document.getElementById('message').innerText = data.message;
             })
-            .catch(error => console.error('Error:', error));
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('message').innerText = `An error occurred while activating ${deviceName}`;
+            });
         }
     </script>
 </body>
