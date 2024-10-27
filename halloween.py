@@ -8,7 +8,7 @@ app = Flask(__name__)
 bartender = 40
 frankenstein = 38
 werewolf = 36
-pumpkin = 32
+fog = 32
 monstermash = [40, 38, 36, 32]
 
 GPIO.setmode(GPIO.BOARD)
@@ -28,8 +28,8 @@ def action(deviceName):
     try:
         if deviceName == 'frankenstein':
             relay = frankenstein
-        elif deviceName == 'pumpkin':
-            relay = pumpkin
+        elif deviceName == 'fog':
+            relay = fog
         elif deviceName == 'werewolf':
             relay = werewolf
         elif deviceName == 'bartender':
