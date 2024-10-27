@@ -17,7 +17,7 @@ relay_pins = monstermash
 # Set up all relays initially
 for pin in relay_pins:
     GPIO.setup(pin, GPIO.OUT)
-    GPIO.output(pin, GPIO.LOW)  # Set all relays to OFF state initially
+    GPIO.output(pin, GPIO.HIGH)  # Set all relays to ON state initially (inactive state)
 
 @app.route("/")
 def index():
@@ -37,16 +37,16 @@ def action(deviceName):
         elif deviceName == 'monstermash':
             # Activate all relays for monstermash
             for pin in monstermash:
-                GPIO.output(pin, GPIO.HIGH)  # Turn ON all relays
+                GPIO.output(pin, GPIO.LOW)  # Turn ON all relays
             time.sleep(1)  # Keep all relays on for 1 second
             for pin in monstermash:
-                GPIO.output(pin, GPIO.LOW)  # Turn OFF all relays
+                GPIO.output(pin, GPIO.HIGH)  # Turn OFF all relays
             return jsonify({"message": "Monster Mash activated!"})
 
         # Activate the selected relay
-        GPIO.output(relay, GPIO.HIGH)  # Turn ON the relay
+        GPIO.output(relay, GPIO.LOW)  # Turn ON the relay
         time.sleep(2)  # Keep the relay on for 2 seconds
-        GPIO.output(relay, GPIO.LOW)  # Turn OFF the relay
+        GPIO.output(relay, GPIO.HIGH)  # Turn OFF the relay
         return jsonify({"message": f"{deviceName.capitalize()} activated!"})
 
     except Exception as e:
