@@ -1,0 +1,24 @@
+bartender_button:
+  alias: "Trigger Bartender"
+  sequence:
+    - service: rest_command.bartender_relay
+
+frankenstein_button:
+  alias: "Trigger Frankenstein"
+  sequence:
+    - service: rest_command.frankenstein_relay
+
+werewolf_button:
+  alias: "Trigger Werewolf"
+  sequence:
+    - service: rest_command.werewolf_relay
+
+fog_button:
+  alias: "Trigger Fog"
+  sequence:
+    - service: rest_command.fog_relay
+
+monstermash_button:
+  alias: "Trigger Monster Mash"
+  sequence:
+    - service: rest_command.monstermash_relay
