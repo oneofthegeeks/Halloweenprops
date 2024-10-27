@@ -1,0 +1,15 @@
+bartender_relay:
+  url: "https://halloween.brinton.xyz/bartender"
+  method: GET
+frankenstein_relay:
+  url: "https://halloween.brinton.xyz/frankenstein"
+  method: GET
+werewolf_relay:
+  url: "https://halloween.brinton.xyz/werewolf"
+  method: GET
+fog_relay:
+  url: "https://halloween.brinton.xyz/fog"
+  method: GET
+monstermash_relay:
+  url: "https://halloween.brinton.xyz/monstermash"
+  method: GET
