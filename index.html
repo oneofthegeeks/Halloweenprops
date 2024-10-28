@@ -91,56 +91,24 @@
         }
     </style>
     <script>
-        let pinVerified = false;
-
-        function isWithinAllowedHours(startHour, endHour) {
-            const now = new Date();
-            const currentHour = now.getHours();
-            return currentHour >= startHour && currentHour < endHour;
-        }
-
-        function verifyPin() {
-            const enteredPin = document.getElementById("pin-input").value;
-            const correctPin = "1234";  // Set your desired PIN here
-
-            if (enteredPin === correctPin) {
-                pinVerified = true;
-                document.getElementById("pin-container").style.display = "none";
-                document.getElementById("control-panel").style.display = "block";
-                document.getElementById("message").innerText = "";  // Clear any previous message
-            } else {
-                alert("Incorrect PIN. Please try again.");
-            }
-        }
-
         function activateDevice(deviceName) {
-            if (pinVerified || isWithinAllowedHours(18, 23)) {
-                let url = '/' + deviceName + '/';
-                fetch(url, { method: 'GET' })
-                .then(response => response.json())
-                .then(data => {
-                    alert(data.message);
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('An error occurred: ' + error);
-                });
-            } else {
-                if (!pinVerified) {
-                    document.getElementById("message").innerText = "The Halloween fun is only available between 6 PM and 11 PM! Please come back during those hours.";
-                }
-            }
+            let url = '/' + deviceName + '/';
+            fetch(url, { method: 'GET' })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred: ' + error);
+            });
         }
     </script>
 </head>
 <body>
     <h1>Brinton Halloween Dashboard</h1>
 
-    <div id="pin-container" class="pin-container">
-        <label for="pin-input">Enter PIN to access controls:</label>
-        <input type="password" id="pin-input" maxlength="4">
-        <button onclick="verifyPin()">Submit</button>
-    </div>
+    
 
     <div id="control-panel" style="display: none;">
         <div class="controller-item">
@@ -177,6 +145,6 @@
         </div>
     </div>
 
-    <div id="message" class="message"></div>
+    
 </body>
 </html>
