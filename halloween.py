@@ -53,10 +53,6 @@ def signal_handler(sig, frame):
 signal.signal(signal.SIGTERM, signal_handler)
 signal.signal(signal.SIGINT, signal_handler)
 
-def is_within_allowed_hours(start_hour, end_hour):
-    current_hour = time.localtime().tm_hour
-    return start_hour <= current_hour < end_hour
-
 @app.route("/")
 def index():
     logging.info("Rendering index page.")
@@ -82,14 +78,10 @@ def set_fog_duration():
 @app.route("/<deviceName>/")
 def action(deviceName):
     try:
-        override = request.args.get('override', 'false').lower() == 'true'
-        if override or is_within_allowed_hours(18, 23):
-            duration = request.args.get('duration', type=float, default=relay_durations.get(deviceName, 2))
-            logging.info(f"Received request to activate {deviceName} for {duration} seconds (override={override}).")
-            executor.submit(asyncio.run, activate_relay(deviceName, duration))
-            return jsonify({"message": f"{deviceName.capitalize()} activation started!"})
-        else:
-            return jsonify({"message": "The Halloween fun is only available between 6 PM and 11 PM!"}), 403
+        duration = request.args.get('duration', type=float, default=relay_durations.get(deviceName, 2))
+        logging.info(f"Received request to activate {deviceName} for {duration} seconds.")
+        executor.submit(asyncio.run, activate_relay(deviceName, duration))
+        return jsonify({"message": f"{deviceName.capitalize()} activation started!"})
     except Exception as e:
         logging.error(f"An error occurred while processing the request for {deviceName}: {str(e)}")
         return jsonify({"message": f"An error occurred: {str(e)}"}), 500
