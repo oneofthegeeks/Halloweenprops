@@ -1,7 +1,14 @@
 import RPi.GPIO as GPIO
 import time
-import threading
-from flask import Flask, render_template, jsonify
+import concurrent.futures
+import asyncio
+import logging
+import signal
+import sys
+from flask import Flask, render_template, request, redirect, url_for, jsonify
+
+# Setup logging
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)s: %(message)s', handlers=[logging.FileHandler("halloween_debug.log"), logging.StreamHandler()])
 
 app = Flask(__name__)
 
@@ -21,34 +28,97 @@ werewolf = 36
 fog = 32
 monstermash = [40, 38, 36, 32]
 
-GPIO.setmode(GPIO.BOARD)
-relay_pins = monstermash
+try:
+    GPIO.setmode(GPIO.BOARD)
+    relay_pins = monstermash
 
-# Set up all relays initially
-for pin in relay_pins:
-    GPIO.setup(pin, GPIO.OUT)
-    GPIO.output(pin, GPIO.HIGH)  # Set all relays to OFF state initially (inactive)
+    # Set up all relays initially
+    for pin in relay_pins:
+        GPIO.setup(pin, GPIO.OUT)
+        GPIO.output(pin, GPIO.HIGH)  # Set all relays to OFF state initially (inactive)
+        logging.debug(f"Initial setup: Set relay on pin {pin} to OFF state (HIGH)")
+except Exception as e:
+    logging.error(f"An error occurred during GPIO setup: {str(e)}")
+    GPIO.cleanup()
+
+# Create a thread pool executor to manage concurrent tasks
+executor = concurrent.futures.ThreadPoolExecutor(max_workers=5)
+
+def signal_handler(sig, frame):
+    logging.info("Signal received, cleaning up GPIO and exiting.")
+    GPIO.cleanup()
+    sys.exit(0)
+
+# Register signal handlers for graceful termination
+signal.signal(signal.SIGTERM, signal_handler)
+signal.signal(signal.SIGINT, signal_handler)
+
+def is_within_allowed_hours(start_hour, end_hour):
+    current_hour = time.localtime().tm_hour
+    return start_hour <= current_hour < end_hour
 
 @app.route("/")
 def index():
-    return render_template('index.html')
+    logging.info("Rendering index page.")
+    return render_template('index.html', relay_durations=relay_durations)
+
+@app.route("/set_fog_duration", methods=['POST'])
+def set_fog_duration():
+    try:
+        new_duration = request.form.get('duration', type=float)
+        if new_duration is not None and new_duration > 60:
+            new_duration = 60
+            logging.info(f"Fog duration capped at 60 seconds.")
+        if new_duration is not None:
+            relay_durations['fog'] = new_duration
+            logging.info(f"Fog duration updated to {new_duration} seconds.")
+        else:
+            logging.warning("No valid duration provided for fog machine.")
+        return redirect(url_for('index'))
+    except Exception as e:
+        logging.error(f"An error occurred while setting the fog duration: {str(e)}")
+        return jsonify({"message": f"An error occurred: {str(e)}"}), 500
 
 @app.route("/<deviceName>/")
 def action(deviceName):
     try:
-        # Return an immediate response to confirm the request
-        response = jsonify({"message": f"{deviceName.capitalize()} activation started!"})
-        
-        # Start a new thread to handle the GPIO actions
-        thread = threading.Thread(target=activate_relay, args=(deviceName,))
-        thread.start()
-
-        return response
+        override = request.args.get('override', 'false').lower() == 'true'
+        if override or is_within_allowed_hours(18, 23):
+            duration = request.args.get('duration', type=float, default=relay_durations.get(deviceName, 2))
+            logging.info(f"Received request to activate {deviceName} for {duration} seconds (override={override}).")
+            executor.submit(asyncio.run, activate_relay(deviceName, duration))
+            return jsonify({"message": f"{deviceName.capitalize()} activation started!"})
+        else:
+            return jsonify({"message": "The Halloween fun is only available between 6 PM and 11 PM!"}), 403
     except Exception as e:
+        logging.error(f"An error occurred while processing the request for {deviceName}: {str(e)}")
         return jsonify({"message": f"An error occurred: {str(e)}"}), 500
 
-def activate_relay(deviceName):
+@app.route("/logs")
+def view_logs():
     try:
+        def stream_logs():
+            with open("halloween_debug.log", "r") as log_file:
+                for line in reversed(log_file.readlines()):
+                    yield line
+        return app.response_class(stream_logs(), mimetype='text/plain')
+    except Exception as e:
+        logging.error(f"An error occurred while trying to read the logs: {str(e)}")
+        return jsonify({"message": "Could not read the log file."}), 500
+
+@app.route("/clear_logs", methods=['POST'])
+def clear_logs():
+    try:
+        open("halloween_debug.log", "w").close()  # Clear the log file
+        logging.info("Logs have been cleared.")
+        return redirect(url_for('view_logs'))
+    except Exception as e:
+        logging.error(f"An error occurred while trying to clear the logs: {str(e)}")
+        return jsonify({"message": "Could not clear the log file."}), 500
+
+async def activate_relay(deviceName, duration):
+    try:
+        logging.debug(f"Activating relay for device: {deviceName} with duration: {duration} seconds.")
         if deviceName == 'frankenstein':
             relay = frankenstein
         elif deviceName == 'fog':
@@ -61,21 +131,27 @@ def activate_relay(deviceName):
             # Activate all relays for monstermash
             for pin in monstermash:
                 GPIO.output(pin, GPIO.LOW)  # Turn ON all relays
-            time.sleep(relay_durations.get('monstermash', 1))  # Keep all relays on for specified duration
+                logging.debug(f"Monstermash: Turned ON relay on pin {pin}")
+            await asyncio.sleep(duration)  # Keep all relays on for specified duration
             for pin in monstermash:
                 GPIO.output(pin, GPIO.HIGH)  # Turn OFF all relays
+                logging.debug(f"Monstermash: Turned OFF relay on pin {pin}")
             return
 
         # Activate the selected relay
         GPIO.output(relay, GPIO.LOW)  # Turn ON the relay
-        time.sleep(relay_durations.get(deviceName, 2))  # Keep the relay on for its specified duration
+        logging.info(f"Turned ON relay for {deviceName} (pin {relay}) for {duration} seconds.")
+        await asyncio.sleep(duration)  # Keep the relay on for its specified duration
         GPIO.output(relay, GPIO.HIGH)  # Turn OFF the relay
+        logging.info(f"Turned OFF relay for {deviceName} (pin {relay}).")
 
     except Exception as e:
-        print(f"An error occurred while activating {deviceName}: {str(e)}")
+        logging.error(f"An error occurred while activating {deviceName}: {str(e)}")
 
 if __name__ == "__main__":
     try:
+        logging.info("Starting Flask application.")
         app.run(host='0.0.0.0', port=80)
     finally:
         GPIO.cleanup()  # Ensure GPIO cleanup on exit
+        logging.info("Cleaned up GPIO pins on exit.")
