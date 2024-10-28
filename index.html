@@ -107,6 +107,7 @@
                 pinVerified = true;
                 document.getElementById("pin-container").style.display = "none";
                 document.getElementById("control-panel").style.display = "block";
+                document.getElementById("message").innerText = "";  // Clear any previous message
             } else {
                 alert("Incorrect PIN. Please try again.");
             }
@@ -125,7 +126,9 @@
                     alert('An error occurred: ' + error);
                 });
             } else {
-                document.getElementById("message").innerText = "The Halloween fun is only available between 6 PM and 11 PM! Please come back during those hours.";
+                if (!pinVerified) {
+                    document.getElementById("message").innerText = "The Halloween fun is only available between 6 PM and 11 PM! Please come back during those hours.";
+                }
             }
         }
     </script>
