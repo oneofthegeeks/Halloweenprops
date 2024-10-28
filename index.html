@@ -89,6 +89,11 @@
             width: 80px;
             margin-right: 10px;
         }
+        .status {
+            font-size: 1.2rem;
+            margin-top: 10px;
+            color: #ff8c00;
+        }
     </style>
     <script>
         function activateDevice(deviceName) {
@@ -96,44 +101,64 @@
             fetch(url, { method: 'GET' })
             .then(response => response.json())
             .then(data => {
-                alert(data.message);
+                updateStatus();
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('An error occurred: ' + error);
             });
         }
+
+        function updateStatus() {
+            fetch('/status', { method: 'GET' })
+            .then(response => response.json())
+            .then(data => {
+                for (const [device, status] of Object.entries(data)) {
+                    const statusElement = document.getElementById(`${device}-status`);
+                    if (statusElement) {
+                        statusElement.textContent = status ? "Active" : "Inactive";
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching status:', error);
+            });
+        }
+
+        setInterval(updateStatus, 2000); // Update status every 2 seconds
     </script>
 </head>
 <body>
     <h1>Brinton Halloween Dashboard</h1>
 
-    
-
     <div id="control-panel" style="display: block;">
         <div class="controller-item">
             <h2>Bartender (1)</h2>
             <a href="javascript:void(0);" onclick="activateDevice('bartender');" class="button">Activate</a>
+            <div class="status" id="bartender-status">Inactive</div>
         </div>
 
         <div class="controller-item">
             <h2>Frankenstein (2)</h2>
             <a href="javascript:void(0);" onclick="activateDevice('frankenstein');" class="button">Activate</a>
+            <div class="status" id="frankenstein-status">Inactive</div>
         </div>
 
         <div class="controller-item">
             <h2>Werewolf (3)</h2>
             <a href="javascript:void(0);" onclick="activateDevice('werewolf');" class="button">Activate</a>
+            <div class="status" id="werewolf-status">Inactive</div>
         </div>
 
         <div class="controller-item">
             <h2>Fog (4)</h2>
             <a href="javascript:void(0);" onclick="activateDevice('fog');" class="button">Activate</a>
+            <div class="status" id="fog-status">Inactive</div>
         </div>
 
         <div class="controller-item">
             <h2>Monster Mash</h2>
             <a href="javascript:void(0);" onclick="activateDevice('monstermash');" class="button">Activate</a>
+            <div class="status" id="monstermash-status">Inactive</div>
         </div>
 
         <div class="form-container">
@@ -144,7 +169,5 @@
             </form>
         </div>
     </div>
-
-    
 </body>
 </html>

@@ -28,6 +28,14 @@ werewolf = 36
 fog = 32
 monstermash = [40, 38, 36, 32]
 
+relay_status = {
+    'bartender': False,
+    'frankenstein': False,
+    'werewolf': False,
+    'fog': False,
+    'monstermash': False
+}
+
 try:
     GPIO.setmode(GPIO.BOARD)
     relay_pins = monstermash
@@ -56,7 +64,7 @@ signal.signal(signal.SIGINT, signal_handler)
 @app.route("/")
 def index():
     logging.info("Rendering index page.")
-    return render_template('index.html', relay_durations=relay_durations)
+    return render_template('index.html', relay_durations=relay_durations, relay_status=relay_status)
 
 @app.route("/set_fog_duration", methods=['POST'])
 def set_fog_duration():
@@ -81,10 +89,18 @@ def action(deviceName):
         duration = request.args.get('duration', type=float, default=relay_durations.get(deviceName, 2))
         logging.info(f"Received request to activate {deviceName} for {duration} seconds.")
         executor.submit(asyncio.run, activate_relay(deviceName, duration))
-        return jsonify({"message": f"{deviceName.capitalize()} activation started!"})
+        return jsonify({"message": f"{deviceName.capitalize()} activation started!", "status": "active"})
     except Exception as e:
         logging.error(f"An error occurred while processing the request for {deviceName}: {str(e)}")
         return jsonify({"message": f"An error occurred: {str(e)}"}), 500
+
+@app.route("/status", methods=['GET'])
+def get_status():
+    try:
+        return jsonify(relay_status)
+    except Exception as e:
+        logging.error(f"An error occurred while getting relay status: {str(e)}")
+        return jsonify({"message": "Could not retrieve relay status."}), 500
 
 @app.route("/logs")
 def view_logs():
@@ -121,6 +137,7 @@ async def activate_relay(deviceName, duration):
             relay = bartender
         elif deviceName == 'monstermash':
             # Activate all relays for monstermash
+            relay_status['monstermash'] = True
             for pin in monstermash:
                 GPIO.output(pin, GPIO.LOW)  # Turn ON all relays
                 logging.debug(f"Monstermash: Turned ON relay on pin {pin}")
@@ -128,13 +145,16 @@ async def activate_relay(deviceName, duration):
             for pin in monstermash:
                 GPIO.output(pin, GPIO.HIGH)  # Turn OFF all relays
                 logging.debug(f"Monstermash: Turned OFF relay on pin {pin}")
+            relay_status['monstermash'] = False
             return
 
         # Activate the selected relay
         GPIO.output(relay, GPIO.LOW)  # Turn ON the relay
+        relay_status[deviceName] = True
         logging.info(f"Turned ON relay for {deviceName} (pin {relay}) for {duration} seconds.")
         await asyncio.sleep(duration)  # Keep the relay on for its specified duration
         GPIO.output(relay, GPIO.HIGH)  # Turn OFF the relay
+        relay_status[deviceName] = False
         logging.info(f"Turned OFF relay for {deviceName} (pin {relay}).")
 
     except Exception as e:
