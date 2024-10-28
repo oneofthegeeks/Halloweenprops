@@ -4,73 +4,176 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Brinton Halloween Dashboard</title>
-    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #222;
+            color: #f8f8f8;
+            text-align: center;
+            padding: 2rem;
+        }
+        h1 {
+            font-size: 2rem;
+            color: #ff6600;
+        }
+        .button {
+            display: inline-block;
+            padding: 15px 30px;
+            margin-top: 10px;
+            font-size: 1.2rem;
+            color: #ffffff;
+            background-color: #ff6600;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+        .button:hover {
+            background-color: #ff8c00;
+            transform: scale(1.05);
+        }
+        .controller-item {
+            margin: 2rem 0;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 15px;
+            margin-bottom: 2rem;
+        }
+        .form-container {
+            background-color: #333;
+            padding: 20px;
+            border-radius: 10px;
+            display: inline-block;
+            margin-top: 20px;
+        }
+        .form-container label {
+            font-size: 1.2rem;
+            margin-right: 10px;
+        }
+        .form-container input[type="number"] {
+            padding: 5px;
+            font-size: 1rem;
+            width: 60px;
+            margin-right: 10px;
+        }
+        .form-container button {
+            padding: 10px;
+            font-size: 1rem;
+            color: #ffffff;
+            background-color: #ff6600;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .form-container button:hover {
+            background-color: #ff8c00;
+        }
+        .message {
+            font-size: 1.5rem;
+            color: #ff8c00;
+            margin-top: 20px;
+        }
+        .pin-container {
+            background-color: #444;
+            padding: 20px;
+            border-radius: 10px;
+            display: inline-block;
+            margin-top: 20px;
+            color: #f8f8f8;
+        }
+        .pin-container input[type="password"] {
+            padding: 5px;
+            font-size: 1rem;
+            width: 80px;
+            margin-right: 10px;
+        }
+    </style>
+    <script>
+        let pinVerified = false;
+
+        function isWithinAllowedHours(startHour, endHour) {
+            const now = new Date();
+            const currentHour = now.getHours();
+            return currentHour >= startHour && currentHour < endHour;
+        }
+
+        function verifyPin() {
+            const enteredPin = document.getElementById("pin-input").value;
+            const correctPin = "1234";  // Set your desired PIN here
+
+            if (enteredPin === correctPin) {
+                pinVerified = true;
+                document.getElementById("pin-container").style.display = "none";
+                document.getElementById("control-panel").style.display = "block";
+            } else {
+                alert("Incorrect PIN. Please try again.");
+            }
+        }
+
+        function activateDevice(deviceName) {
+            if (pinVerified || isWithinAllowedHours(18, 23)) {
+                let url = '/' + deviceName + '/';
+                fetch(url, { method: 'GET' })
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred: ' + error);
+                });
+            } else {
+                document.getElementById("message").innerText = "The Halloween fun is only available between 6 PM and 11 PM! Please come back during those hours.";
+            }
+        }
+    </script>
 </head>
 <body>
-    <!-- Navigation Bar -->
-        <!-- Hero Image -->
-    <div class="hero">
-        <img src="https://i.imgur.com/KhaipLg.jpeg" alt="Brinton Halloween" style="width: 300px; height: auto; margin: 0 auto; display: block;">
-    </div>
-
-    <!-- Main Title -->
     <h1>Brinton Halloween Dashboard</h1>
 
-    <!-- Feedback Message -->
-    <div id="message" class="feedback-message">
-        {% if message %}
-            <p>{{ message }}</p>
-        {% endif %}
+    <div id="pin-container" class="pin-container">
+        <label for="pin-input">Enter PIN to access controls:</label>
+        <input type="password" id="pin-input" maxlength="4">
+        <button onclick="verifyPin()">Submit</button>
     </div>
 
-    <!-- Controller Section -->
-    <div id="controller" class="container">
+    <div id="control-panel" style="display: none;">
         <div class="controller-item">
             <h2>Bartender (1)</h2>
-            <button onclick="activateDevice('bartender')" class="button">Activate</button>
+            <a href="javascript:void(0);" onclick="activateDevice('bartender');" class="button">Activate</a>
         </div>
 
         <div class="controller-item">
             <h2>Frankenstein (2)</h2>
-            <button onclick="activateDevice('frankenstein')" class="button">Activate</button>
+            <a href="javascript:void(0);" onclick="activateDevice('frankenstein');" class="button">Activate</a>
         </div>
 
         <div class="controller-item">
             <h2>Werewolf (3)</h2>
-            <button onclick="activateDevice('werewolf')" class="button">Activate</button>
+            <a href="javascript:void(0);" onclick="activateDevice('werewolf');" class="button">Activate</a>
         </div>
 
         <div class="controller-item">
             <h2>Fog (4)</h2>
-            <button onclick="activateDevice('fog')" class="button">Activate</button>
+            <a href="javascript:void(0);" onclick="activateDevice('fog');" class="button">Activate</a>
         </div>
 
         <div class="controller-item">
             <h2>Monster Mash</h2>
-            <button onclick="activateDevice('monstermash')" class="button">Activate</button>
+            <a href="javascript:void(0);" onclick="activateDevice('monstermash');" class="button">Activate</a>
+        </div>
+
+        <div class="form-container">
+            <form action="/set_fog_duration" method="post">
+                <label for="duration">Set Fog Duration (seconds):</label>
+                <input type="number" id="duration" name="duration" min="1" max="60" value="{{ relay_durations['fog'] }}">
+                <button type="submit">Update Duration</button>
+            </form>
         </div>
     </div>
 
-    <!-- JavaScript for AJAX Request -->
-    <script>
-        function activateDevice(deviceName) {
-            // Immediately display a confirmation message that the button was pressed
-            document.getElementById('message').innerText = `${deviceName.charAt(0).toUpperCase() + deviceName.slice(1)} activation started!`;
-
-            // Send the fetch request to the server
-            fetch('/' + deviceName + '/', {
-                method: 'GET'
-            })
-            .then(response => response.json())
-            .then(data => {
-                // Update the message again once the activation completes
-                document.getElementById('message').innerText = data.message;
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                document.getElementById('message').innerText = `An error occurred while activating ${deviceName}`;
-            });
-        }
-    </script>
+    <div id="message" class="message"></div>
 </body>
 </html>
